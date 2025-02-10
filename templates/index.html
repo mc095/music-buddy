@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Music Chat</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <div class="chat-container">
+      <header class="chat-header">
+        <div class="header-inner">
+          <div class="header-content">
+            <img
+              src="/static/bot.gif"
+              alt="AI Assistant"
+              class="profile-pic"
+              id="bot-profile"
+            />
+            <div class="header-text">
+              <h1>Music Buddy</h1>
+              <p>Let's discover some tunes ✨</p>
+            </div>
+          </div>
+          <div class="music-wave">
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+            <div class="wave-bar"></div>
+          </div>
+        </div>
+      </header>
+
+      <div class="chat-messages" id="chat-messages">
+        <div class="messages-inner">
+          <div class="message bot">
+            <div class="message-content">
+              Hey! I'm your music buddy. What kind of tunes are you into? 🎵
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-container">
+        <div class="input-wrapper">
+          <textarea
+            class="input-field"
+            placeholder="Ask about music..."
+            id="user-input"
+            rows="1"
+          ></textarea>
+        </div>
+      </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+  </body>
+</html>
