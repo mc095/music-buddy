@@ -1,5 +1,8 @@
 import os
 import requests
+from dotenv import load_dotenv
+
+load_dotenv()
 
 MUSIXMATCH_API_KEY = os.getenv("MUSIXMATCH_API_KEY")
 
@@ -26,5 +29,5 @@ def get_lyrics_and_artist_info(song_name, artist_name):
                 artist_info = artist_desc
 
         return artist_info, main_verse
-    except Exception:
-        return "Error fetching artist info", "Error fetching lyrics"
+    except Exception as e:
+        return f"Error fetching artist info: {str(e)}", f"Error fetching lyrics: {str(e)}"

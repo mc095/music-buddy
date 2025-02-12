@@ -1,13 +1,12 @@
 import os
-import re
-import requests
 from flask import Flask, request, Response, render_template
 from flask_cors import CORS
 from groq import Groq
 from dotenv import load_dotenv
-from lyrics_scraper import get_lyrics
+from services.youtube_client import get_youtube_video
+from services.musixmatch_client import get_lyrics_and_artist_info
+from services.chat_utils import extract_song_and_artist
 
-# Load environment variables
 load_dotenv()
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
@@ -16,72 +15,17 @@ CORS(app)
 # Initialize Groq client
 client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-SYSTEM_PROMPT = """You are a music assistant that can:
-- Fetch lyrics when users ask about songs
-- Find YouTube videos for songs
-- Provide music recommendations and trivia
-- Extract song or video names from user requests"""
+SYSTEM_PROMPT = """I am your personal music companion, here to enhance your listening experience.  
+I can fetch lyrics, find music videos, recommend new songs, and provide deep insights into music trivia.  
 
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
-MUSIXMATCH_API_KEY = "cf748eb6bbf678ec3b6eae7e175f9e29"
+- **Lyrics Provider**: Retrieve accurate lyrics to help you sing along.  
+- **Music Video Finder**: Find and share links to official music videos.  
+- **Recommendation Engine**: Suggest songs based on your preferences.  
+- **Music Trivia Expert**: Share background stories and facts about songs and artists.  
 
-def get_youtube_video(query):
-    try:
-        params = {
-            "part": "snippet",
-            "q": query,
-            "key": YOUTUBE_API_KEY,
-            "maxResults": 1,
-            "type": "video"
-        }
+Communicate with me naturally, and I will respond like a knowledgeable music enthusiast.  
+Lets explore, discover, and enjoy music together."""  
 
-        response = requests.get(
-            "https://www.googleapis.com/youtube/v3/search",
-            params=params,
-            timeout=10
-        )
-        data = response.json()
-
-        if response.status_code != 200 or "items" not in data or not data["items"]:
-            return None
-
-        video_id = data["items"][0]["id"]["videoId"]
-        return f"https://www.youtube.com/watch?v={video_id}"
-    except Exception as e:
-        return None
-
-def extract_song_and_artist(user_input):
-    """Extracts the song and artist name from user input."""
-    match = re.search(r'play\s+"?([^\"]+)"?\s+by\s+([^\"]+)', user_input, re.IGNORECASE)
-    if match:
-        return match.group(1).strip(), match.group(2).strip()
-    return None, None
-
-def get_lyrics_and_artist_info(song_name, artist_name):
-    try:
-        # Fetch lyrics
-        lyrics_url = f"https://api.musixmatch.com/ws/1.1/matcher.lyrics.get?q_track={song_name}&q_artist={artist_name}&apikey={MUSIXMATCH_API_KEY}"
-        lyrics_response = requests.get(lyrics_url).json()
-        lyrics = lyrics_response.get("message", {}).get("body", {}).get("lyrics", {}).get("lyrics_body", "Lyrics not found.")
-
-        # Extract main verse (first 8 lines)
-        lyrics_lines = lyrics.split('\n')
-        main_verse = '\n'.join(lyrics_lines[:8])
-
-        # Fetch artist info
-        artist_url = f"https://api.musixmatch.com/ws/1.1/artist.search?q_artist={artist_name}&apikey={MUSIXMATCH_API_KEY}"
-        artist_response = requests.get(artist_url).json()
-        artist_info = "No artist info available."
-
-        if "message" in artist_response and "body" in artist_response["message"]:
-            artist_list = artist_response["message"]["body"].get("artist_list", [])
-            if artist_list:
-                artist_desc = artist_list[0]["artist"].get("artist_name", "") + " is a popular artist known for their unique sound."
-                artist_info = artist_desc
-
-        return artist_info, main_verse
-    except Exception as e:
-        return "Error fetching artist info", "Error fetching lyrics"
 
 @app.route('/')
 def home():
