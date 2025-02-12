@@ -48,7 +48,6 @@ def chat():
         video_link = f"🎬 Listen the music <a href='{video_url}' target='_blank'>here</a>" if video_url else "❌ No video found."
 
         response = f"""
-        {artist_info}
         <br><br>
         C'mon Sing with me :
         <br><br>
